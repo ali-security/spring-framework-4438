@@ -102,7 +102,7 @@ class HandlerMethodTests {
 
 	private static void testValidateReturnValue(Object target, List<String> methodNames, boolean expected) {
 		for (String methodName : methodNames) {
-			shouldValidateArguments(getHandlerMethod(target, methodName), expected);
+			assertThat(getHandlerMethod(target, methodName).shouldValidateReturnValue()).isEqualTo(expected);
 		}
 	}
 
