@@ -382,7 +382,7 @@ abstract class AnnotationsScanner {
 		}
 		for (int i = 0; i < rootParameterTypes.length; i++) {
 			Class<?> resolvedParameterType = ResolvableType.forMethodParameter(
-					candidateMethod, i, sourceDeclaringClass).toClass();
+					candidateMethod, i, sourceDeclaringClass).resolve();
 			if (rootParameterTypes[i] != resolvedParameterType) {
 				return false;
 			}

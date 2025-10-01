@@ -38,41 +38,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 class HandlerMethodTests {
 
 	@Test
-	void shouldValidateArgsWithConstraintsDirectlyInClass() {
+	void shouldValidateArgsWithConstraintsDirectlyOnClass() {
 		Object target = new MyClass();
 		testValidateArgs(target, List.of("addIntValue", "addPersonAndIntValue", "addPersons", "addPeople", "addNames"), true);
 		testValidateArgs(target, List.of("addPerson", "getPerson", "getIntValue", "addPersonNotValidated"), false);
 	}
 
 	@Test
-	void shouldValidateArgsWithConstraintsInInterface() {
+	void shouldValidateArgsWithConstraintsOnInterface() {
 		Object target = new MyInterfaceImpl();
 		testValidateArgs(target, List.of("addIntValue", "addPersonAndIntValue", "addPersons", "addPeople"), true);
 		testValidateArgs(target, List.of("addPerson", "addPersonNotValidated", "getPerson", "getIntValue"), false);
 	}
 
 	@Test
-	void shouldValidateArgsWithConstraintsInGenericAbstractSuperclass() {
-		Object target = new GenericInterfaceImpl();
-		shouldValidateArguments(getHandlerMethod(target, "processTwo", String.class), true);
-	}
-
-	@Test
-	void shouldValidateArgsWithConstraintsInGenericInterface() {
-		Object target = new GenericInterfaceImpl();
-		shouldValidateArguments(getHandlerMethod(target, "processOne", Long.class), false);
-		shouldValidateArguments(getHandlerMethod(target, "processOneAndTwo", Long.class, Object.class), true);
-	}
-
-	@Test
-	void shouldValidateReturnValueWithConstraintsDirectlyInClass() {
+	void shouldValidateReturnValueWithConstraintsDirectlyOnClass() {
 		Object target = new MyClass();
 		testValidateReturnValue(target, List.of("getPerson", "getIntValue"), true);
 		testValidateReturnValue(target, List.of("addPerson", "addIntValue", "addPersonNotValidated"), false);
 	}
 
 	@Test
-	void shouldValidateReturnValueWithConstraintsInInterface() {
+	void shouldValidateReturnValueWithConstraintsOnInterface() {
 		Object target = new MyInterfaceImpl();
 		testValidateReturnValue(target, List.of("getPerson", "getIntValue"), true);
 		testValidateReturnValue(target, List.of("addPerson", "addIntValue", "addPersonNotValidated"), false);
@@ -83,15 +70,6 @@ class HandlerMethodTests {
 		Object target = new MyValidatedClass();
 		testValidateArgs(target, List.of("addPerson"), false);
 		testValidateReturnValue(target, List.of("getPerson"), false);
-	}
-
-	private static void shouldValidateArguments(HandlerMethod handlerMethod, boolean expected) {
-		if (expected) {
-			assertThat(handlerMethod.shouldValidateArguments()).as(handlerMethod.getMethod().getName()).isTrue();
-		}
-		else {
-			assertThat(handlerMethod.shouldValidateArguments()).as(handlerMethod.getMethod().getName()).isFalse();
-		}
 	}
 
 	private static void testValidateArgs(Object target, List<String> methodNames, boolean expected) {
@@ -107,11 +85,7 @@ class HandlerMethodTests {
 	}
 
 	private static HandlerMethod getHandlerMethod(Object target, String methodName) {
-		return getHandlerMethod(target, methodName, (Class<?>[]) null);
-	}
-
-	private static HandlerMethod getHandlerMethod(Object target, String methodName, Class<?>... parameterTypes) {
-		Method method = ClassUtils.getMethod(target.getClass(), methodName, parameterTypes);
+		Method method = ClassUtils.getMethod(target.getClass(), methodName, (Class<?>[]) null);
 		return new HandlerMethod(target, method).createWithValidateFlags();
 	}
 
@@ -234,33 +208,6 @@ class HandlerMethodTests {
 		@Valid
 		public Person getPerson() {
 			throw new UnsupportedOperationException();
-		}
-	}
-
-	interface GenericInterface<A, B> {
-
-		void processOne(@Valid A value1);
-
-		void processOneAndTwo(A value1, @Max(42) B value2);
-	}
-
-	abstract static class GenericAbstractSuperclass<C> implements GenericInterface<Long, C> {
-
-		@Override
-		public void processOne(Long value1) {
-		}
-
-		@Override
-		public void processOneAndTwo(Long value1, C value2) {
-		}
-
-		public abstract void processTwo(@Max(42) C value);
-	}
-
-	static class GenericInterfaceImpl extends GenericAbstractSuperclass<String> {
-
-		@Override
-		public void processTwo(String value) {
 		}
 	}
 
